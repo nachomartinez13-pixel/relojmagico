@@ -1,247 +1,402 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reloj Digital LED - DS-Digital</title>
-    <link href="https://fonts.cdnfonts.com/css/ds-digital" rel="stylesheet">
+
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>Retro Clock</title>
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#000000">
+
+    <!-- iPhone -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent">
+
+    <meta name="apple-mobile-web-app-title"
+        content="Retro Clock">
+
+    <!-- Android -->
+    <meta name="mobile-web-app-capable"
+        content="yes">
+
+    <!-- Manifest -->
+    <link rel="manifest"
+        href="manifest.json">
+
+    <!-- Icono -->
+    <link rel="apple-touch-icon"
+        href="icon.png">
+
+    <!-- Fuente -->
+    <link href="https://fonts.cdnfonts.com/css/ds-digital"
+        rel="stylesheet">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
         }
 
-        body {
-            width: 100vw;
-            height: 100vh;
-            background: #000000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'DS-Digital', monospace;
-            overflow: hidden;
+        html,body{
+            width:100%;
+            height:100%;
+            overflow:hidden;
+            background:#000;
         }
 
-        .reloj-container {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100vw;
-            height: 100vh;
-            background: #000000;
+        body{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+
+            background:
+            radial-gradient(circle at center,
+            #1a1a1a 0%,
+            #000000 70%);
+
+            font-family:'DS-Digital', monospace;
+
+            user-select:none;
+            -webkit-user-select:none;
+
+            touch-action:manipulation;
         }
 
-        .reloj {
-            font-size: clamp(100px, 30vw, 500px);
-            color: #ff2200;
-            font-weight: bold;
-            letter-spacing: 0.08em;
-            font-family: 'DS-Digital', monospace;
-            text-align: center;
-            white-space: nowrap;
-            position: relative;
-            
-            /* Efecto LED realista multicapa */
-            text-shadow: 
-                /* Núcleo brillante central */
+        .reloj-container{
+            width:100vw;
+            height:100vh;
+
+            display:flex;
+            justify-content:center;
+            align-items:center;
+
+            position:relative;
+            overflow:hidden;
+        }
+
+        .reloj{
+
+            position:relative;
+
+            font-size:clamp(120px, 28vw, 500px);
+
+            color:#ff2200;
+
+            letter-spacing:0.06em;
+
+            white-space:nowrap;
+
+            filter:
+            brightness(1.25)
+            contrast(1.35);
+
+            animation:
+            glowPulse 3s ease-in-out infinite;
+
+            text-shadow:
+
+            0 0 5px #ff6600,
+            0 0 10px #ff4400,
+            0 0 20px #ff2200,
+            0 0 30px #ff1100,
+            0 0 40px #ff0000,
+            0 0 60px rgba(255,0,0,0.9),
+            0 0 90px rgba(255,0,0,0.5);
+        }
+
+        .numero-apagado{
+            opacity:0.08;
+        }
+
+        .dos-puntos{
+            animation:blink 1s steps(2,start) infinite;
+        }
+
+        @keyframes blink{
+
+            0%,49%{
+                opacity:1;
+            }
+
+            50%,100%{
+                opacity:0.1;
+            }
+        }
+
+        @keyframes glowPulse{
+
+            0%,100%{
+
+                filter:
+                brightness(1.2)
+                contrast(1.3);
+
+                text-shadow:
+
                 0 0 5px #ff6600,
                 0 0 10px #ff4400,
-                0 0 15px #ff2200,
-                /* Resplandor medio */
-                0 0 20px #ff1100,
-                0 0 30px #ff0000,
-                0 0 40px #cc0000,
-                /* Halo exterior */
-                0 0 50px rgba(255, 0, 0, 0.8),
-                0 0 70px rgba(255, 0, 0, 0.5),
-                0 0 90px rgba(255, 0, 0, 0.3),
-                /* Sombra interior para profundidad */
-                inset 0 0 10px rgba(0, 0, 0, 0.5);
-            
-            animation: ledPulso 3s ease-in-out infinite;
-            filter: brightness(1.2) contrast(1.3);
-        }
-
-        .numero-apagado {
-            color: rgba(255, 34, 0, 0.08);
-            text-shadow: 
-                0 0 2px rgba(255, 0, 0, 0.1),
-                inset 0 0 5px rgba(0, 0, 0, 0.8);
-            filter: brightness(0.9);
-        }
-
-        .dos-puntos {
-            animation: parpadeoLED 1s steps(2, start) infinite;
-            display: inline-block;
-            margin: 0 0.02em;
-        }
-
-        /* Efecto de parpadeo realista de LED */
-        @keyframes parpadeoLED {
-            0%, 49% {
-                opacity: 1;
-                text-shadow: 
-                    0 0 5px #ff6600,
-                    0 0 10px #ff4400,
-                    0 0 15px #ff2200,
-                    0 0 20px #ff1100,
-                    0 0 30px #ff0000,
-                    0 0 40px #cc0000,
-                    0 0 50px rgba(255, 0, 0, 0.8),
-                    0 0 70px rgba(255, 0, 0, 0.5),
-                    0 0 90px rgba(255, 0, 0, 0.3),
-                    inset 0 0 10px rgba(0, 0, 0, 0.5);
+                0 0 20px #ff2200,
+                0 0 30px #ff1100,
+                0 0 40px #ff0000,
+                0 0 60px rgba(255,0,0,0.9),
+                0 0 90px rgba(255,0,0,0.5);
             }
-            50%, 100% {
-                opacity: 0.15;
-                text-shadow: 
-                    0 0 2px #330000,
-                    inset 0 0 5px rgba(0, 0, 0, 0.8);
+
+            50%{
+
+                filter:
+                brightness(1.4)
+                contrast(1.5);
+
+                text-shadow:
+
+                0 0 8px #ff6600,
+                0 0 15px #ff4400,
+                0 0 25px #ff2200,
+                0 0 35px #ff1100,
+                0 0 50px #ff0000,
+                0 0 80px rgba(255,0,0,1),
+                0 0 120px rgba(255,0,0,0.6);
             }
         }
 
-        /* Pulso sutil de intensidad */
-        @keyframes ledPulso {
-            0%, 100% {
-                text-shadow: 
-                    0 0 5px #ff6600,
-                    0 0 10px #ff4400,
-                    0 0 15px #ff2200,
-                    0 0 20px #ff1100,
-                    0 0 30px #ff0000,
-                    0 0 40px #cc0000,
-                    0 0 50px rgba(255, 0, 0, 0.8),
-                    0 0 70px rgba(255, 0, 0, 0.5),
-                    0 0 90px rgba(255, 0, 0, 0.3),
-                    inset 0 0 10px rgba(0, 0, 0, 0.5);
-                filter: brightness(1.2) contrast(1.3);
-            }
-            50% {
-                text-shadow: 
-                    0 0 8px #ff6600,
-                    0 0 15px #ff4400,
-                    0 0 20px #ff2200,
-                    0 0 25px #ff1100,
-                    0 0 35px #ff0000,
-                    0 0 45px #cc0000,
-                    0 0 60px rgba(255, 0, 0, 0.9),
-                    0 0 80px rgba(255, 0, 0, 0.6),
-                    0 0 100px rgba(255, 0, 0, 0.4),
-                    inset 0 0 15px rgba(0, 0, 0, 0.4);
-                filter: brightness(1.4) contrast(1.5);
-            }
-        }
+        /* Scanlines */
 
-        /* Efecto de líneas de escaneo (scan lines) */
-        .reloj::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 0, 0, 0.15) 0px,
-                rgba(0, 0, 0, 0.15) 1px,
-                transparent 1px,
-                transparent 2px
+        .reloj::before{
+
+            content:'';
+
+            position:absolute;
+
+            top:0;
+            left:0;
+            right:0;
+            bottom:0;
+
+            pointer-events:none;
+
+            background:
+            repeating-linear-gradient(
+
+            0deg,
+
+            rgba(0,0,0,0.18) 0px,
+            rgba(0,0,0,0.18) 1px,
+
+            transparent 1px,
+            transparent 3px
+
             );
-            animation: scanlines 8s linear infinite;
+
+            animation:scanlines 8s linear infinite;
         }
 
-        @keyframes scanlines {
-            0% {
-                transform: translateY(0);
+        @keyframes scanlines{
+
+            0%{
+                transform:translateY(0);
             }
-            100% {
-                transform: translateY(4px);
+
+            100%{
+                transform:translateY(4px);
             }
         }
 
-        /* Efecto de brillo ambiental sutil */
-        .reloj::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 120%;
-            height: 120%;
-            background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0.1) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: -1;
+        /* Glow ambiente */
+
+        .reloj::after{
+
+            content:'';
+
+            position:absolute;
+
+            top:50%;
+            left:50%;
+
+            transform:translate(-50%,-50%);
+
+            width:140%;
+            height:140%;
+
+            pointer-events:none;
+
+            background:
+            radial-gradient(
+
+            ellipse at center,
+
+            rgba(255,0,0,0.12) 0%,
+            transparent 70%
+
+            );
+
+            z-index:-1;
         }
 
-        /* Contenedor para mayor control */
-        .reloj-wrapper {
-            position: relative;
-            z-index: 1;
+        @media (orientation:portrait){
+
+            .reloj{
+
+                font-size:24vw;
+            }
         }
+
     </style>
+
 </head>
+
 <body>
-    <div class="reloj-container" id="relojContainer">
-        <div class="reloj-wrapper">
-            <div class="reloj" id="reloj">12:45</div>
+
+    <div class="reloj-container">
+
+        <div class="reloj"
+            id="reloj">
+
+            12:45
+
         </div>
+
     </div>
 
     <script>
-        const reloj = document.getElementById('reloj');
-        let modo = 1; // 1 = reloj real, 2 = 85:55, 3 = 88:88
+
+        const reloj =
+        document.getElementById('reloj');
+
+        let modo = 1;
+
         let presionando = false;
+
         let tiempoPresion = null;
 
-        function actualizarReloj() {
-            if (modo === 1) {
+        function actualizarReloj(){
+
+            if(modo === 1){
+
                 const ahora = new Date();
-                let horas = String(ahora.getHours()).padStart(2, '0');
-                let minutos = String(ahora.getMinutes()).padStart(2, '0');
-                reloj.innerHTML = `${horas}<span class="dos-puntos">:</span>${minutos}`;
-            } else if (modo === 2) {
-                reloj.innerHTML = `<span class="numero-apagado">8</span>5<span class="dos-puntos">:</span>55`;
-            } else if (modo === 3) {
-                reloj.innerHTML = `88<span class="dos-puntos">:</span>88`;
+
+                let horas =
+                String(
+                ahora.getHours()
+                ).padStart(2,'0');
+
+                let minutos =
+                String(
+                ahora.getMinutes()
+                ).padStart(2,'0');
+
+                reloj.innerHTML =
+                `${horas}<span class="dos-puntos">:</span>${minutos}`;
+
+            }
+
+            else if(modo === 2){
+
+                reloj.innerHTML =
+                `<span class="numero-apagado">8</span>5<span class="dos-puntos">:</span>55`;
+
+            }
+
+            else if(modo === 3){
+
+                reloj.innerHTML =
+                `88<span class="dos-puntos">:</span>88`;
             }
         }
 
-        // Actualizar reloj cada segundo
         actualizarReloj();
-        setInterval(actualizarReloj, 1000);
 
-        // Detección de presión prolongada
-        document.addEventListener('mousedown', () => {
+        setInterval(
+        actualizarReloj,
+        1000
+        );
+
+        /* Pulsación larga */
+
+        function iniciarPresion(){
+
             presionando = true;
-            tiempoPresion = Date.now();
-        });
 
-        document.addEventListener('mouseup', () => {
-            if (presionando && tiempoPresion && Date.now() - tiempoPresion >= 1000) {
-                modo = modo === 3 ? 1 : modo + 1;
+            tiempoPresion = Date.now();
+        }
+
+        function terminarPresion(){
+
+            if(
+            presionando &&
+            tiempoPresion &&
+            Date.now() - tiempoPresion >= 1000
+            ){
+
+                modo =
+                modo === 3
+                ? 1
+                : modo + 1;
+
                 actualizarReloj();
             }
-            presionando = false;
-            tiempoPresion = null;
-        });
 
-        // Soporte táctil para móviles
-        document.addEventListener('touchstart', () => {
-            presionando = true;
-            tiempoPresion = Date.now();
-        });
-
-        document.addEventListener('touchend', () => {
-            if (presionando && tiempoPresion && Date.now() - tiempoPresion >= 1000) {
-                modo = modo === 3 ? 1 : modo + 1;
-                actualizarReloj();
-            }
             presionando = false;
+
             tiempoPresion = null;
-        });
+        }
+
+        document.addEventListener(
+        'mousedown',
+        iniciarPresion
+        );
+
+        document.addEventListener(
+        'mouseup',
+        terminarPresion
+        );
+
+        document.addEventListener(
+        'touchstart',
+        iniciarPresion
+        );
+
+        document.addEventListener(
+        'touchend',
+        terminarPresion
+        );
+
+        /* Wake Lock */
+
+        let wakeLock = null;
+
+        async function activarWakeLock(){
+
+            try{
+
+                if('wakeLock' in navigator){
+
+                    wakeLock =
+                    await navigator.wakeLock.request('screen');
+                }
+
+            }catch(e){}
+        }
+
+        activarWakeLock();
+
+        /* Service Worker */
+
+        if('serviceWorker' in navigator){
+
+            navigator.serviceWorker.register('./sw.js');
+        }
+
     </script>
+
 </body>
+
 </html>
