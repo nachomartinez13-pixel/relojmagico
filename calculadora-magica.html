@@ -573,10 +573,10 @@
 
     function enterDigit(digit) {
       if (magicActive) {
+        // Si el resto necesita decimales, insertar el punto automáticamente
+        // antes de revelar el siguiente dígito en la secuencia.
         if (correctionText.charAt(revealedText.length) === ".") {
-          expressionText = "Pulsa . para continuar";
-          render();
-          return;
+          revealedText += ".";
         }
 
         revealNextDigit();
