@@ -2,8 +2,14 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#000000">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Calculadora">
+  <link rel="manifest" href="./calculadora.webmanifest">
+  <link rel="apple-touch-icon" href="./icon.png">
   <title>Calculadora mágica</title>
   <style>
     * { box-sizing: border-box; }
@@ -17,6 +23,7 @@
     }
 
     html, body {
+      touch-action: manipulation;
       width: 100%;
       height: 100%;
       min-height: 100%;
@@ -222,6 +229,7 @@
     }
 
     button {
+      touch-action: manipulation;
       width: var(--key-size);
       height: var(--key-size);
       min-width: 0;
@@ -256,6 +264,8 @@
       background: #fff;
       color: #ff9f0a;
     }
+
+    .standalone-mode .status-bar { display: none; }
 
     .zero {
       width: calc(var(--key-size) * 2 + var(--key-gap));
@@ -315,6 +325,9 @@
   </main>
 
   <script>
+    const standaloneMode = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    if (standaloneMode) document.documentElement.classList.add("standalone-mode");
+
     const app = document.getElementById("app");
     const statusBar = document.getElementById("statusBar");
     const keys = document.getElementById("keys");
@@ -780,6 +793,12 @@
       fitDisplay();
       fitLayout();
     });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js").catch(function () {});
+      });
+    }
   </script>
 </body>
 </html>
