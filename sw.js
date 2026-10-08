@@ -1,4 +1,4 @@
-const CACHE_NAME = "relojmagico-v2";
+const CACHE_NAME = "relojmagico-v3";
 
 const urlsToCache = [
   "./",
