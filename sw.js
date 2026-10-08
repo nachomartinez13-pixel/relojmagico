@@ -1,4 +1,4 @@
-const CACHE_NAME = "relojmagico-v3";
+const CACHE_NAME = "relojmagico-v4";
 
 const urlsToCache = [
   "./",
@@ -6,7 +6,9 @@ const urlsToCache = [
   "./manifest.json",
   "./icon.png",
   "./calculadora-magica.html",
-  "./calculadora.webmanifest"
+  "./calculadora.webmanifest",
+  "./calculadora-icon.svg",
+  "./calculadora-icon-192.svg"
 ];
 
 self.addEventListener("install", event => {
