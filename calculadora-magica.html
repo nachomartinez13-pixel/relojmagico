@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Calculadora mágica</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      color-scheme: dark;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #000;
+      --key-size: 64px;
+      --key-gap: 9px;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+    }
+
+    body {
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    .app {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding:
+        env(safe-area-inset-top, 0px)
+        env(safe-area-inset-right, 0px)
+        env(safe-area-inset-bottom, 0px)
+        env(safe-area-inset-left, 0px);
+      background: #000;
+    }
+
+    .status-bar {
+      position: relative;
+      z-index: 1;
+      flex: 0 0 48px;
+      width: min(100%, 520px);
+      margin: 0 auto;
+      padding: 0 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-time { min-width: 55px; }
+
+    .dynamic-island {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      width: 112px;
+      height: 30px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: #050505;
+      box-shadow: inset 0 0 0 1px #101010;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cellular {
+      height: 13px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .cellular i {
+      width: 3px;
+      display: block;
+      border-radius: 1px;
+      background: #fff;
+    }
+
+    .cellular i:nth-child(1) { height: 4px; }
+    .cellular i:nth-child(2) { height: 7px; }
+    .cellular i:nth-child(3) { height: 10px; }
+    .cellular i:nth-child(4) { height: 13px; }
+
+    .wifi {
+      width: 15px;
+      height: 13px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wifi::before {
+      content: "";
+      position: absolute;
+      left: 1px;
+      bottom: -7px;
+      width: 13px;
+      height: 13px;
+      border: 2px solid #fff;
+      border-color: #fff #fff transparent transparent;
+      border-radius: 50%;
+      transform: rotate(-45deg);
+    }
+
+    .wifi::after {
+      content: "";
+      position: absolute;
+      left: 6px;
+      bottom: 0;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .battery {
+      position: relative;
+      width: 22px;
+      height: 11px;
+      border: 1.5px solid #fff;
+      border-radius: 3px;
+    }
+
+    .battery::before {
+      content: "";
+      position: absolute;
+      inset: 1.5px;
+      border-radius: 1px;
+      background: #fff;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      top: 2.5px;
+      right: -4px;
+      width: 2px;
+      height: 4px;
+      border-radius: 0 2px 2px 0;
+      background: #fff;
+    }
+
+    .calculator {
+      width: min(100%, 520px);
+      min-height: 0;
+      flex: 1 1 0;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .display-area {
+      min-height: 0;
+      flex: 1 1 0;
+      padding: 8px clamp(24px, 7vw, 40px) 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: visible;
+    }
+
+    .expression {
+      flex: 0 0 auto;
+      min-height: 1.3em;
+      max-height: none;
+      margin-bottom: 5px;
+      overflow: visible;
+      overflow-wrap: anywhere;
+      white-space: normal;
+      color: #9b9b9b;
+      text-align: right;
+      font-size: clamp(14px, 4.5vw, 19px);
+      line-height: 1.35;
+    }
+
+    .display {
+      display: block;
+      flex: 0 0 auto;
+      width: 100%;
+      min-width: 0;
+      min-height: 1.2em;
+      overflow: visible;
+      color: #fff;
+      text-align: right;
+      white-space: nowrap;
+      font-size: 76px;
+      line-height: 1.2;
+      font-weight: 300;
+      letter-spacing: -0.055em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .keys {
+      flex: 0 0 auto;
+      width: min(100%, 520px);
+      margin: 0 auto;
+      padding: 0 16px 12px;
+      display: grid;
+      grid-template-columns: repeat(4, var(--key-size));
+      grid-template-rows: repeat(5, var(--key-size));
+      justify-content: center;
+      gap: var(--key-gap);
+    }
+
+    button {
+      width: var(--key-size);
+      height: var(--key-size);
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: #333;
+      color: #fff;
+      font: inherit;
+      font-size: clamp(22px, 8vw, 36px);
+      font-weight: 400;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:active { filter: brightness(1.4); }
+
+    .utility {
+      background: #a5a5a5;
+      color: #111;
+      font-size: clamp(16px, 5vw, 23px);
+    }
+
+    .operator {
+      background: #ff9f0a;
+      color: #fff;
+      font-size: clamp(26px, 8vw, 38px);
+    }
+
+    .operator.selected {
+      background: #fff;
+      color: #ff9f0a;
+    }
+
+    .zero {
+      width: calc(var(--key-size) * 2 + var(--key-gap));
+      height: var(--key-size);
+      grid-column: span 2;
+      border-radius: 999px;
+      text-align: left;
+      padding-left: 18%;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app" id="app">
+    <header class="status-bar" id="statusBar">
+      <span class="status-time" id="clock">--:--</span>
+      <div class="dynamic-island" aria-hidden="true"></div>
+      <div class="status-icons" aria-hidden="true">
+        <span class="cellular"><i></i><i></i><i></i><i></i></span>
+        <span class="wifi"></span>
+        <span class="battery"></span>
+      </div>
+    </header>
+
+    <section class="calculator" aria-label="Calculadora">
+      <div class="display-area" id="displayArea" aria-live="polite">
+        <div class="expression" id="expression"></div>
+        <output class="display" id="display">0</output>
+      </div>
+
+      <section class="keys" id="keys" aria-label="Teclas">
+        <button class="utility" data-action="delete" aria-label="Borrar último carácter">⌫</button>
+        <button class="utility" data-action="clear">AC</button>
+        <button class="utility" data-action="percent">%</button>
+        <button class="operator" data-operator="÷">÷</button>
+
+        <button data-digit="7">7</button>
+        <button data-digit="8">8</button>
+        <button data-digit="9">9</button>
+        <button class="operator" data-operator="×">×</button>
+
+        <button data-digit="4">4</button>
+        <button data-digit="5">5</button>
+        <button data-digit="6">6</button>
+        <button class="operator" data-operator="−">−</button>
+
+        <button data-digit="1">1</button>
+        <button data-digit="2">2</button>
+        <button data-digit="3">3</button>
+        <button class="operator" data-operator="+">+</button>
+
+        <button class="zero" data-digit="0">0</button>
+        <button data-action="decimal">.</button>
+        <button class="operator" data-action="equals">=</button>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const app = document.getElementById("app");
+    const statusBar = document.getElementById("statusBar");
+    const keys = document.getElementById("keys");
+    const displayArea = document.getElementById("displayArea");
+    const display = document.getElementById("display");
+    const expression = document.getElementById("expression");
+    const clock = document.getElementById("clock");
+
+    const measureCanvas = document.createElement("canvas");
+    const measureContext = measureCanvas.getContext("2d");
+
+    let current = "0";
+    let accumulator = null;
+    let pendingOperator = null;
+    let waitingForOperand = false;
+    let operatorCount = 0;
+    let expressionText = "";
+
+    let magicActive = false;
+    let magicOperator = null;
+    let targetText = "";
+    let correctionText = "";
+    let revealedText = "";
+    let extraInputs = 0;
+
+    function fitLayout() {
+      const appStyle = getComputedStyle(app);
+      const appHeight =
+        app.clientHeight -
+        (parseFloat(appStyle.paddingTop) || 0) -
+        (parseFloat(appStyle.paddingBottom) || 0);
+
+      const statusHeight = statusBar.getBoundingClientRect().height;
+      const keyStyle = getComputedStyle(keys);
+      const areaStyle = getComputedStyle(displayArea);
+
+      const padLeft = parseFloat(keyStyle.paddingLeft) || 0;
+      const padRight = parseFloat(keyStyle.paddingRight) || 0;
+      const padBottom = parseFloat(keyStyle.paddingBottom) || 0;
+      const gapX = parseFloat(keyStyle.columnGap) || 8;
+      const gapY = parseFloat(keyStyle.rowGap) || gapX;
+
+      const usableWidth = keys.clientWidth - padLeft - padRight;
+      const sizeByWidth = (usableWidth - gapX * 3) / 4;
+
+      const areaPadding =
+        (parseFloat(areaStyle.paddingTop) || 0) +
+        (parseFloat(areaStyle.paddingBottom) || 0);
+
+      const displayContentHeight =
+        expression.scrollHeight +
+        display.getBoundingClientRect().height +
+        areaPadding +
+        8;
+
+      const availableKeyHeight =
+        appHeight - statusHeight - displayContentHeight;
+
+      const sizeByHeight =
+        (availableKeyHeight - padBottom - gapY * 4) / 5;
+
+      const keySize = Math.max(
+        12,
+        Math.floor(Math.min(sizeByWidth, sizeByHeight))
+      );
+
+      document.documentElement.style.setProperty(
+        "--key-size",
+        keySize + "px"
+      );
+    }
+
+    function fitDisplay() {
+      const width = display.getBoundingClientRect().width;
+      const family = getComputedStyle(display).fontFamily;
+      const text = display.textContent || "0";
+      let size = 76;
+
+      while (size > 5) {
+        measureContext.font = "300 " + size + "px " + family;
+        if (measureContext.measureText(text).width <= width - 8) break;
+        size--;
+      }
+
+      display.style.fontSize = size + "px";
+    }
+
+    function render() {
+      display.textContent = current || "0";
+      expression.textContent = expressionText;
+
+      requestAnimationFrame(function () {
+        fitDisplay();
+        fitLayout();
+      });
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      clock.textContent = hours + ":" + minutes;
+    }
+
+    function formatTarget(date) {
+      const day = String(date.getDate());
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = String(date.getFullYear());
+      const hour = String(date.getHours()).padStart(2, "0");
+      const minute = String(date.getMinutes()).padStart(2, "0");
+
+      return day + month + year + hour + minute;
+    }
+
+    function applyOperator(operator, left, right) {
+      switch (operator) {
+        case "+": return left + right;
+        case "−": return left - right;
+        case "×": return left * right;
+        case "÷": return right === 0 ? NaN : left / right;
+        default: return right;
+      }
+    }
+
+    function formatNumber(value) {
+      if (!Number.isFinite(value)) return "Error";
+      if (Number.isInteger(value)) return String(value);
+      return String(Number(value.toPrecision(12)));
+    }
+
+    function makeFactor(targetValue, subtotalValue, decimalPlaces) {
+      const places = decimalPlaces || 18;
+      const target = BigInt(targetValue);
+      const divisor = BigInt(subtotalValue);
+      const whole = target / divisor;
+      let remainder = target % divisor;
+
+      if (remainder === 0n) return whole.toString();
+
+      let fraction = "";
+
+      for (let i = 0; i < places && remainder !== 0n; i++) {
+        remainder *= 10n;
+        fraction += String(remainder / divisor);
+        remainder %= divisor;
+      }
+
+      fraction = fraction.replace(/0+$/, "");
+      return fraction ? whole.toString() + "." + fraction : whole.toString();
+    }
+
+    function clearAll() {
+      current = "0";
+      accumulator = null;
+      pendingOperator = null;
+      waitingForOperand = false;
+      operatorCount = 0;
+      expressionText = "";
+
+      magicActive = false;
+      magicOperator = null;
+      targetText = "";
+      correctionText = "";
+      revealedText = "";
+      extraInputs = 0;
+
+      document.querySelectorAll(".operator").forEach(function (button) {
+        button.classList.remove("selected");
+      });
+
+      render();
+    }
+
+    function showError(message) {
+      current = "Error";
+      expressionText = message;
+      render();
+    }
+
+    function startMagic(operator) {
+      if (accumulator === null || !Number.isFinite(accumulator)) {
+        showError("Operación no válida");
+        return;
+      }
+
+      if (!Number.isInteger(accumulator)) {
+        showError("Usa un subtotal entero para un resultado exacto");
+        return;
+      }
+
+      const targetDate = new Date(Date.now() + 2 * 60 * 1000);
+      targetText = formatTarget(targetDate);
+      const target = Number(targetText);
+
+      if (operator === "+") {
+        const correction = target - accumulator;
+
+        if (correction < 0) {
+          showError("Para usar +, el subtotal debe ser menor que el objetivo");
+          return;
+        }
+
+        correctionText = String(correction);
+      } else if (operator === "−") {
+        const correction = accumulator - target;
+
+        if (correction < 0) {
+          showError("Para usar −, el subtotal debe ser mayor que el objetivo");
+          return;
+        }
+
+        correctionText = String(correction);
+      } else if (operator === "×") {
+        if (accumulator <= 0) {
+          showError("Para usar ×, el subtotal debe ser mayor que cero");
+          return;
+        }
+
+        correctionText = makeFactor(targetText, accumulator, 18);
+      } else {
+        showError("En el tercer operador elige +, − o ×");
+        return;
+      }
+
+      magicActive = true;
+      magicOperator = operator;
+      revealedText = "";
+      extraInputs = 0;
+      pendingOperator = operator;
+      waitingForOperand = true;
+      current = formatNumber(accumulator);
+      expressionText = formatNumber(accumulator) + " " + operator;
+
+      document.querySelectorAll(".operator").forEach(function (button) {
+        button.classList.toggle(
+          "selected",
+          button.dataset.operator === operator
+        );
+      });
+
+      render();
+    }
+
+    function enterDigit(digit) {
+      if (magicActive) {
+        if (correctionText.charAt(revealedText.length) === ".") {
+          expressionText = "Pulsa . para continuar";
+          render();
+          return;
+        }
+
+        revealNextDigit();
+        return;
+      }
+
+      if (waitingForOperand) {
+        current = digit;
+        waitingForOperand = false;
+      } else if (current === "0") {
+        current = digit;
+      } else if (current === "-0") {
+        current = "-" + digit;
+      } else {
+        current += digit;
+      }
+
+      render();
+    }
+
+    function enterDecimal() {
+      if (magicActive) {
+        if (correctionText.charAt(revealedText.length) === ".") {
+          revealedText += ".";
+          current = revealedText;
+          expressionText = formatNumber(accumulator) + " " + magicOperator;
+          render();
+        }
+
+        return;
+      }
+
+      if (waitingForOperand) {
+        current = "0.";
+        waitingForOperand = false;
+      } else if (!current.includes(".")) {
+        current += ".";
+      }
+
+      render();
+    }
+
+    function deleteLast() {
+      if (magicActive) {
+        if (revealedText.length > 0) {
+          revealedText = revealedText.slice(0, -1);
+          current = revealedText || "0";
+          extraInputs = 0;
+          expressionText = formatNumber(accumulator) + " " + magicOperator;
+        }
+
+        render();
+        return;
+      }
+
+      if (current === "Error") {
+        clearAll();
+        return;
+      }
+
+      if (waitingForOperand && pendingOperator !== null) return;
+
+      waitingForOperand = false;
+
+      if (
+        current.length <= 1 ||
+        (current.length === 2 && current.startsWith("-"))
+      ) {
+        current = "0";
+      } else {
+        current = current.slice(0, -1);
+        if (current === "-" || current === "") current = "0";
+      }
+
+      render();
+    }
+
+    function pressOperator(operator) {
+      if (magicActive) return;
+
+      // Repetir un operador lo sustituye; no cuenta como otra operación.
+      if (pendingOperator !== null && waitingForOperand) {
+        pendingOperator = operator;
+        expressionText = formatNumber(accumulator) + " " + operator;
+        render();
+        return;
+      }
+
+      const value = Number(current);
+      if (!Number.isFinite(value)) return;
+
+      if (pendingOperator !== null && !waitingForOperand) {
+        accumulator = applyOperator(pendingOperator, accumulator, value);
+
+        if (!Number.isFinite(accumulator)) {
+          showError("Operación no válida");
+          return;
+        }
+
+        current = formatNumber(accumulator);
+      } else if (accumulator === null) {
+        accumulator = value;
+      }
+
+      operatorCount++;
+
+      if (operatorCount === 3) {
+        startMagic(operator);
+        return;
+      }
+
+      pendingOperator = operator;
+      waitingForOperand = true;
+      current = formatNumber(accumulator);
+      expressionText = formatNumber(accumulator) + " " + operator;
+      render();
+    }
+
+    function revealNextDigit() {
+      if (revealedText.length < correctionText.length) {
+        revealedText += correctionText.charAt(revealedText.length);
+        current = revealedText;
+        expressionText = formatNumber(accumulator) + " " + magicOperator;
+      } else if (extraInputs < 20) {
+        extraInputs++;
+      }
+
+      render();
+    }
+
+    function equals() {
+      if (magicActive) {
+        revealedText = correctionText;
+        current = targetText;
+        expressionText =
+          formatNumber(accumulator) + " " +
+          magicOperator + " " + correctionText + " =";
+
+        magicActive = false;
+        waitingForOperand = true;
+        pendingOperator = null;
+        accumulator = Number(targetText);
+
+        render();
+        return;
+      }
+
+      if (pendingOperator !== null && !waitingForOperand) {
+        const result = applyOperator(
+          pendingOperator,
+          accumulator,
+          Number(current)
+        );
+
+        current = formatNumber(result);
+        expressionText =
+          formatNumber(accumulator) + " " +
+          pendingOperator + " " + current + " =";
+        accumulator = Number(current);
+        pendingOperator = null;
+        waitingForOperand = true;
+        render();
+      }
+    }
+
+    function percent() {
+      if (magicActive || current === "Error") return;
+
+      current = formatNumber(Number(current) / 100);
+      render();
+    }
+
+    keys.addEventListener("click", function (event) {
+      const button = event.target.closest("button");
+      if (!button) return;
+
+      if (button.dataset.action === "clear") return clearAll();
+      if (button.dataset.action === "delete") return deleteLast();
+      if (button.dataset.action === "equals") return equals();
+      if (button.dataset.action === "decimal") return enterDecimal();
+      if (button.dataset.action === "percent") return percent();
+
+      if (button.dataset.digit !== undefined) {
+        return enterDigit(button.dataset.digit);
+      }
+
+      if (button.dataset.operator) {
+        return pressOperator(button.dataset.operator);
+      }
+    });
+
+    window.addEventListener("resize", function () {
+      requestAnimationFrame(function () {
+        fitDisplay();
+        fitLayout();
+      });
+    });
+
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(function () {
+        fitDisplay();
+        fitLayout();
+      });
+
+      observer.observe(app);
+      observer.observe(keys);
+      observer.observe(displayArea);
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    requestAnimationFrame(function () {
+      fitDisplay();
+      fitLayout();
+    });
+  </script>
+</body>
+</html>
